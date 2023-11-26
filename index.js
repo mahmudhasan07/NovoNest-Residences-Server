@@ -87,7 +87,6 @@ async function run() {
       if (sort == 'sortHtoL') {
         query = { rent: -1 }
       }
-
       const result = await apartmentsDB.find().sort(query).toArray()
       res.send(result)
 
@@ -98,7 +97,7 @@ async function run() {
       const result = await userDB.find(query).toArray()
       res.send(result)
     })
-    app.get(`/users/member`, async (req, res) => {
+    app.get(`/users/members`, async (req, res) => {
       const query = { role: 'member' }
       const result = await userDB.find(query).toArray()
       res.send(result)
@@ -109,7 +108,7 @@ async function run() {
       const query = { email: email, role: 'admin' }
       const result = await userDB.findOne(query)
       if (!result) {
-        res.send({ message: "User not found" })
+        return
       }
       else {
         res.send(result)
@@ -121,7 +120,7 @@ async function run() {
       const query = { email: email, role: "member" }
       const result = await userDB.findOne(query)
       if (!result) {
-        res.send({ message: "User not found" })
+        return
       }
       else {
         res.send(result)
@@ -136,6 +135,17 @@ async function run() {
 
     app.get('/users', async (req, res) => {
       const result = await userDB.find().toArray()
+      res.send(result)
+    })
+
+    app.get(`/agreements`, async (req, res) => {
+      const agreements = await agreementDB.find().toArray();
+      res.send(agreements)
+    })
+
+    app.get(`/agreements/completed`, async(req,res)=>{
+      const query = { status : "complete" }
+      const result = await agreementDB.find(query).toArray()
       res.send(result)
     })
 
