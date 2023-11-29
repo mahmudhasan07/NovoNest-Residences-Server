@@ -6,7 +6,7 @@ const port = process.env.PORT || 5000
 require('dotenv').config()
 const app = express()
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173','https://novonest-realty.web.app'],
   credentials: true
 }
 ))
@@ -70,7 +70,7 @@ async function run() {
     }
 
     const verifyAdmin = async (req, res, next) => {
-      const email = req.user.email
+      const email = req?.user?.email
       const query = { email: email }
       const result = await userDB.findOne(query)
       if (result?.role !== "admin") {
@@ -96,17 +96,17 @@ async function run() {
 
     })
 
-    app.get(`/users/admin`, async (req, res) => {
+    app.get(`/users/admin`, verifyToken, verifyAdmin, async (req, res) => {
       const query = { role: 'admin' }
       const result = await userDB.find(query).toArray()
       res.send(result)
     })
-    app.get(`/users/members`, async (req, res) => {
+    app.get(`/users/members`, verifyToken, async (req, res) => {
       const query = { role: 'member' }
       const result = await userDB.find(query).toArray()
       res.send(result)
     })
-    app.get(`/users/admin/:email`, async (req, res) => {
+    app.get(`/users/admin/:email`, verifyAdmin, verifyAdmin, async (req, res) => {
       const email = req.params.email
       // const query1 = { role: 'admin' }
       const query = { email: email, role: 'admin' }
@@ -118,7 +118,7 @@ async function run() {
         res.send(result)
       }
     })
-    app.get(`/users/members/:email`, async (req, res) => {
+    app.get(`/users/members/:email`, verifyToken, async (req, res) => {
       const email = req.params.email
       // const query = { role: "member" }
       const query = { email: email, role: "member" }
@@ -137,24 +137,24 @@ async function run() {
       res.send(coupons)
     })
 
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyToken,verifyAdmin,  async (req, res) => {
       const result = await userDB.find().toArray()
       res.send(result)
     })
 
-    app.get(`/agreements`, async (req, res) => {
+    app.get(`/agreements`, verifyToken, async (req, res) => {
       // const data =req.query
       // const query = { userEmail: data.data }
       const agreements = await agreementDB.find().toArray();
       res.send(agreements)
     })
 
-    app.get(`/agreements/pending`, async (req, res) => {
+    app.get(`/agreements/pending`, verifyToken, async (req, res) => {
       const query = { status: "pending" }
       const result = await agreementDB.find(query).toArray()
       res.send(result)
     })
-    app.get(`/agreements/complete`, async (req, res) => {
+    app.get(`/agreements/complete`, verifyToken,  async (req, res) => {
       const data = req.query
       // const query = { status: "complete" }
       // console.log(data);
@@ -169,7 +169,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get(`/notice`, async (req, res) => {
+    app.get(`/notice`, verifyToken, async (req, res) => {
       let query = {}
       const sort = req.query.data
       if (sort == 'latest') {
@@ -182,12 +182,12 @@ async function run() {
       res.send(notice)
     })
 
-    app.get(`/payment`, async (req, res) => {
+    app.get(`/payment`, verifyToken, async (req, res) => {
       const result = await paymentDB.find().toArray()
       res.send(result)
     })
 
-    app.get('/payment/:id', async (req, res) => {
+    app.get('/payment/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       // console.log(id);
       const query = { _id: new ObjectId(id) }
@@ -195,7 +195,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get(`/payment-success/:email`, async (req, res) => {
+    app.get(`/payment-success/:email`, verifyToken, async (req, res) => {
       let query = {}
       // const sort = req.query.data 
       const email = req.params.email;
@@ -386,8 +386,8 @@ async function run() {
 
 
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
